@@ -1,0 +1,7 @@
+# Hard head: sigmoid crop concept probabilities + sqrt areas + report descriptors + lesion descriptor,
+# without the learned appearance vectors (no counterfactual grounding)
+_base_: ../ebcbm.yaml
+run_name: ebcbm_hard
+idea: ablation
+model: {diag_head: hard}
+cf: {enabled: false}

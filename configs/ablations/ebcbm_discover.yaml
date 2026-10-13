@@ -1,0 +1,15 @@
+# EB-CBM + 4 discovered evidence regions (Table 1 row "+ discovered regions"): unlabelled part masks read through
+# soft-weighted crops by the same local encoder; regularised to lie inside the lesion, be compact, not overlap each
+# other or the 5 expert structures, and cover 1-30 % of the lesion.  No counterfactual grounding (as in the paper).
+_base_: ebcbm_no_cf.yaml
+run_name: ebcbm_discover
+model:
+  discover:
+    n_parts: 4
+    app_dim: 4
+    support_tau: 0.1
+    bias_init: 0.0
+    lesion_gate: true
+    shared_decoder: false
+    detach_features: true
+    reg: {outside: 1.0, compact: 0.1, overlap: 1.0, area: 1.0, binary: 0.1, peak: 1.0, area_min: 0.01, area_max: 0.30}

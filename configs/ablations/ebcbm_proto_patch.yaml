@@ -1,0 +1,6 @@
+# As ebcbm_proto, but each prototype is a patch-token vector and its similarity is the max over lesion patches
+# (patches with >= 50 % of their pixels inside the predicted lesion): prototypes become local lesion parts.
+_base_: ebcbm_proto.yaml
+run_name: ebcbm_proto_patch
+model:
+  lesion_embed: {proto_pool: max_patch}

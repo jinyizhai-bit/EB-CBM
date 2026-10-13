@@ -1,0 +1,5 @@
+# EB-CBM without counterfactual grounding (Table 1 row "w/o counterfactual grounding")
+_base_: ../ebcbm.yaml
+run_name: ebcbm_no_cf
+idea: ablation
+cf: {enabled: false}

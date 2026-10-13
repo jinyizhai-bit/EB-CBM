@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "EB-CBM: Evidence-Bound Concept Bottleneck Models"
+version: 1.0.0
+date-released: 2026-10-12
+license: MIT
+authors:
+  - name: "The EB-CBM authors"   # TODO: replace by the author list after review
+preferred-citation:
+  type: article
+  title: "Evidence-Bound Concept Bottlenecks: Strictly Local, Auditable Concepts for Dermoscopic Diagnosis"
+  authors:
+    - name: "The EB-CBM authors"   # TODO: replace by the author list after review
+  year: 2026
+  journal: "TODO: venue"

@@ -1,0 +1,5 @@
+# Black box reference (Table 1 row "Black box (DINOv2)"): linear classifier on the mean-pooled DINOv2 features
+_base_: ../base.yaml
+run_name: blackbox
+idea: baseline
+model: {concept_head: none, diag_head: blackbox, dropout: 0.1}

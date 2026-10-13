@@ -1,0 +1,25 @@
+# EB-CBM (flagship; "EB-CBM (ours)" in Table 1 of the paper).
+# Strictly local evidence: the global DINOv2 (input 448) only predicts the K+1 masks; concept presence logits and 4-d
+# appearance descriptors come from a shared ResNet-18 on masked crops of the 512-px input; 30 mask-derived report
+# descriptors; a 32-d lesion descriptor from the masked lesion crop through the same DINOv2 (second pass); linear
+# diagnosis head on 92 inputs.  Counterfactual grounding: LaMa structure-removal edits with paired control edits
+# (build them first: python -m cbm.train.counterfactual --splits train val test).
+_base_: base.yaml
+run_name: ebcbm
+idea: flagship
+data: {image_size: 512}
+model:
+  mask_head: true
+  concept_head: rr
+  diag_head: soft_rr
+  app_dim: 4
+  backbone: {grad_checkpointing: true}
+  backbone_input_size: 448
+  concept_evidence: {source: crop}
+  report_feats: true
+  lesion_embed: {enabled: true, dim: 32, source: crop_backbone}
+train: {epochs: 40, patience: 12, batch_size: 32}
+cf:
+  enabled: true
+  frac: 0.5             # share of the batch that carries an (x_minus, x_ctrl) pair
+  max_pairs: 16         # cap per batch; value in effect for the reported runs

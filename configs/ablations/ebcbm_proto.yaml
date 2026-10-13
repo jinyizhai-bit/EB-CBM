@@ -1,0 +1,10 @@
+# Interpretable lesion channel: the 32-d lesion vector is replaced by cosine similarities to 16 prototypes of the
+# LayerNorm'd [CLS, mean] embedding of the masked lesion crop.  Prototypes are projected onto their nearest training
+# lesion embedding every 5 epochs and once more on the best checkpoint (followed by a last-layer refit); a diversity
+# penalty keeps them apart.  Optional variant discussed in the paper (not a Table 1 row).
+_base_: ebcbm_no_cf.yaml
+run_name: ebcbm_proto
+model:
+  lesion_embed: {enabled: true, source: crop_backbone_proto, n_protos: 16, proto_pool: pooled, proto_temp: learned,
+                 proto_temp_init: 1.0, proto_div: 0.1, proto_project_every: 5, proto_final_push: true,
+                 proto_unique_push: true}

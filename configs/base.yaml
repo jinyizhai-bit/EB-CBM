@@ -1,0 +1,90 @@
+# Defaults shared by every EB-CBM config. Override per config file (``_base_`` inheritance) or on the command line
+# with --set key.sub=value (values are parsed as YAML).
+run_name: null          # display name in the run registry (defaults to the config file stem)
+idea: baseline          # free tag stored in the run registry (flagship | ablation | baseline)
+seed: 0
+data:
+  dataset: isic2018_task12
+  image_size: 448
+  mask_size: 128
+  num_workers: 8
+  subset: 0             # >0: stratified subset of N train images (debugging only)
+  subset_eval: 0        # >0: subset of val/test images (debugging only; never for reported runs)
+  val_from_train_frac: 0.12   # carve a stratified val subset out of official train (ids fixed in
+  holdout_seed: 0             #   data/splits/isic2018_task12_val_holdout_seed0.csv) + official val; test untouched
+  aug: {scale_min: 0.7, rot90: true, color_jitter: 0.1}
+  cf_index: null        # counterfactual edit index; null = data/processed/isic2018_task12/cf_512/index.csv
+model:
+  backbone: {type: dinov2, name: facebook/dinov2-with-registers-base, pretrained: true, grad_checkpointing: false}
+  mask_size: 128
+  mask_head: false
+  concept_head: none    # none | global | cem | rr
+  diag_head: blackbox   # blackbox | probs | hard | soft_rr | global | report
+  detach_masks: true    # stop-gradient from the concept/diagnosis path into the masks
+  diag_hidden: 0        # 0 = linear diagnosis head
+  concept_hidden: 0
+  dropout: 0.0
+  app_dim: 4            # per-concept appearance descriptor size
+  cem_dim: 16
+  rr: {proj_dim: 256, hidden: 128, pool_tau: 0.05, null_thresh: 0.5}
+  verifier: {enabled: false, mode: none, width: 32, crop: 128}
+  report: {head: linear, hidden: 32, l1: 1.0e-3, colour_detail: true, refit: true}
+  report_feats: false   # append the mask-derived report descriptors (detached masks, standardised) to the head input
+  lesion_embed: {enabled: false, dim: 8, proj_dim: 64, source: tokens,  # tokens | crop | crop_backbone | crop_backbone_proto
+                 n_protos: 16, proto_pool: pooled, proto_temp: learned, proto_temp_init: 1.0, proto_div: 0.1,
+                 proto_project_every: 5, proto_final_push: true, proto_unique_push: true}
+  discover:                   # discovered evidence regions (crop mode only): extra unlabelled soft mask planes
+    n_parts: 0
+    app_dim: 4
+    support_tau: 0.1          # part crop weight = upsampled soft mask, exactly 0 where <= support_tau
+    bias_init: 0.0            # part planes start undecided (p~0.5) so that part crops and gradients exist
+    lesion_gate: true         # part masks x hard detached predicted lesion mask (parts live inside the lesion)
+    shared_decoder: false     # false: separate light part decoder (part losses cannot disturb the expert masks)
+    detach_features: true     # part decoder reads detached backbone features (backbone untouched by part losses)
+    decoder_dim: 128
+    reg: {outside: 1.0, compact: 0.1, overlap: 1.0, area: 1.0, binary: 0.0, peak: 0.0, area_min: 0.01, area_max: 0.30}
+  backbone_input_size: null   # e.g. 448 with data.image_size 512: the global backbone sees 448, crops read the 512 input
+  concept_evidence:           # tokens = pool backbone features inside M_c; crop = local encoder on masked crops
+    source: tokens
+    crop_size: 224
+    margin: 0.10              # box enlargement per side, then made square and clamped to the image
+    min_area_frac: 0.002      # binarised mask area below this fraction of the image -> learned null token
+    mask_thresh: 0.5
+    mask_channel: true        # append the (kept) region as a 4th input channel (zero-initialised conv branch)
+    mask_bias_init: -3.0      # crop mode: mask-head output bias at init (masks start empty)
+    local_encoder: {name: resnet18.a1_in1k, pretrained: true, grad_checkpointing: true, chunk: 128}
+train:
+  epochs: 35
+  batch_size: 32
+  lr_backbone: 2.0e-5
+  lr_heads: 2.0e-4
+  lr_c2y: 1.0e-2        # LR of a *linear* diagnosis head on probabilities / areas / descriptors (probs, hard,
+                        #   soft_rr, linear report); null = use lr_heads. Not used for blackbox / CEM / MLP heads
+  lr_local: 1.0e-4      # LR of the crop-evidence local encoder (resnet18)
+  weight_decay: 0.05
+  warmup_epochs: 1
+  grad_clip: 1.0
+  bf16: true
+  balance: loss         # none | loss (class-weighted CE) | sampler (class-balanced sampler)
+  label_smoothing: 0.0
+  patience: 10          # early stopping on val BACC
+  cem_randint: 0.0      # CEM random intervention probability during training
+  verifier_regions: 4   # regions per image for verifier training
+  log_every: 20
+  gpu_mem_gb: null      # optional hard cap on this process's GPU memory (torch set_per_process_memory_fraction)
+loss:
+  task: 1.0
+  concept: 1.0
+  mask: 1.0
+  verify: 1.0
+  cf: 1.0
+  cf_kl: 1.0
+  concept_pos_weight: auto   # auto = sqrt(neg/pos) clipped to [1,10]; or null
+cf:
+  enabled: false
+  frac: 0.5             # fraction of samples per batch that also carry an (x_minus, x_ctrl) pair
+  max_pairs: 16         # cap on counterfactual pairs per batch (memory bound)
+eval:
+  after_train: true     # run cbm.eval.evaluate_run at the end of training
+  ph2: true             # dump preds_ph2.npz if the PH2 manifest exists
+  full: true            # model-based tests (interventions, locality, counterfactual, artefacts)

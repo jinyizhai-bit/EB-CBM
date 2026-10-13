@@ -1,0 +1,20 @@
+# Runs behind Table 1 of the paper (ISIC 2018 Task 1-2, seeds 0-2). One shell command per line; lines marked [half]
+# may share a GPU when the queue is started with --per_gpu 2.
+#   python src/cbm/scripts/queue.py experiments/jobs_paper.txt --gpus 0,1
+# Prerequisites: data/processed/{isic2018_task12,ph2} (cbm.data.manifests) and, for ebcbm, the counterfactual edits
+# data/processed/isic2018_task12/cf_512 (cbm.train.counterfactual). Every run evaluates itself at the end.
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ebcbm.yaml --run_id ebcbm_s0 --set seed=0
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ebcbm.yaml --run_id ebcbm_s1 --set seed=1
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ebcbm.yaml --run_id ebcbm_s2 --set seed=2
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_no_cf.yaml --run_id ebcbm_no_cf_s0 --set seed=0
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_no_cf.yaml --run_id ebcbm_no_cf_s1 --set seed=1
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_no_cf.yaml --run_id ebcbm_no_cf_s2 --set seed=2
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_discover.yaml --run_id ebcbm_discover_s0 --set seed=0
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_discover.yaml --run_id ebcbm_discover_s1 --set seed=1
+[half] PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python src/cbm/scripts/train.py --config configs/ablations/ebcbm_discover.yaml --run_id ebcbm_discover_s2 --set seed=2
+python src/cbm/scripts/train.py --config configs/ablations/token_pooling.yaml --run_id token_pooling_s0 --set seed=0
+python src/cbm/scripts/train.py --config configs/ablations/token_pooling.yaml --run_id token_pooling_s1 --set seed=1
+python src/cbm/scripts/train.py --config configs/ablations/token_pooling.yaml --run_id token_pooling_s2 --set seed=2
+python src/cbm/scripts/train.py --config configs/ablations/blackbox.yaml --run_id blackbox_s0 --set seed=0
+python src/cbm/scripts/train.py --config configs/ablations/blackbox.yaml --run_id blackbox_s1 --set seed=1
+python src/cbm/scripts/train.py --config configs/ablations/blackbox.yaml --run_id blackbox_s2 --set seed=2

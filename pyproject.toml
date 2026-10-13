@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ebcbm"
+version = "1.0.0"
+description = "Evidence-Bound Concept Bottleneck Models (EB-CBM): strictly local, auditable concepts for dermoscopic diagnosis"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "torch>=2.4", "torchvision>=0.19", "timm>=1.0.9", "transformers>=4.46", "huggingface-hub>=0.25",
+  "numpy>=1.26", "pillow>=9.5", "opencv-python-headless>=4.8", "scikit-learn>=1.4", "scipy>=1.11",
+  "pandas>=2.0", "pyyaml>=6.0", "matplotlib>=3.8", "tabulate>=0.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

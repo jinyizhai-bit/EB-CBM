@@ -1,0 +1,7 @@
+# Token pooling (Table 1 row "Token pooling (approx. local)"): concept logits and 4-d appearance descriptors from
+# masked average/max pooling of the DINOv2 tokens inside each predicted mask (approximately local: tokens attend
+# globally); no report descriptors, no lesion descriptor.
+_base_: ../base.yaml
+run_name: token_pooling
+idea: ablation
+model: {mask_head: true, concept_head: rr, diag_head: soft_rr, app_dim: 4}
